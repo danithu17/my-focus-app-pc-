@@ -1,11 +1,11 @@
 {
   "build": {
-    "dist_dir": "../src",
-    "dev_path": "../src",
-    "before_build_command": ""
+    "distDir": "../src",
+    "devPath": "../src",
+    "beforeBuildCommand": ""
   },
   "package": {
-    "product_name": "FocusPro",
+    "productName": "FocusPro",
     "version": "0.1.0"
   },
   "tauri": {
