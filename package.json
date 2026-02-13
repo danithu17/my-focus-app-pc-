@@ -1,0 +1,11 @@
+{
+  "name": "focus-pro",
+  "version": "0.1.0",
+  "scripts": {
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^1.5.0",
+    "@tauri-apps/cli": "^1.5.0"
+  }
+}

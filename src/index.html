@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        :root { --primary: #ff4d4d; --bg: #ffffff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
+        .container { text-align: center; width: 320px; padding: 30px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: 1px solid #f0f0f0; }
+        h1 { color: var(--primary); font-size: 28px; margin-bottom: 5px; }
+        p { color: #888; font-size: 14px; margin-bottom: 20px; }
+        input { width: 90%; padding: 12px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--primary); }
+        button { width: 100%; padding: 14px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.3s; margin-top: 10px; }
+        .btn-add { background: #f0f0f0; color: #444; }
+        .btn-add:hover { background: #e5e5e5; }
+        .btn-start { background: var(--primary); color: white; margin-top: 20px; box-shadow: 0 5px 15px rgba(255, 77, 77, 0.3); }
+        .btn-stop { background: #2d2d2d; color: white; }
+        #app-list { text-align: left; font-size: 13px; color: #555; margin: 15px 0; max-height: 80px; overflow-y: auto; padding: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>FocusPro</h1>
+        <p>Stay away from distractions</p>
+        <input id="app-name" placeholder="Process name (e.g. chrome.exe)">
+        <button class="btn-add" onclick="addApp()">+ Add to Blocklist</button>
+        <div id="app-list"></div>
+        <button id="main-btn" class="btn-start" onclick="toggle()">START FOCUS MODE</button>
+    </div>
+
+    <script>
+        const { invoke } = window.__TAURI__.tauri;
+        let apps = [];
+        let active = false;
+
+        function addApp() {
+            let name = document.getElementById('app-name').value.trim();
+            if(name) {
+                if(!name.endsWith(".exe")) name += ".exe";
+                apps.push(name);
+                document.getElementById('app-list').innerHTML += `<div>• ${name}</div>`;
+                document.getElementById('app-name').value = '';
+            }
+        }
+
+        function toggle() {
+            active = !active;
+            const btn = document.getElementById('main-btn');
+            btn.innerText = active ? "STOP FOCUSING" : "START FOCUS MODE";
+            btn.className = active ? "btn-stop" : "btn-start";
+            invoke('toggle_focus', { apps, status: active });
+        }
+    </script>
+</body>
+</html>
