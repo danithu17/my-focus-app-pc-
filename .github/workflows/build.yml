@@ -1,4 +1,4 @@
-name: Build FocusPro EXE
+name: Build FocusPro
 on: [push]
 jobs:
   build:
@@ -18,5 +18,5 @@ jobs:
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: FocusPro-Application
+          name: FocusPro-Exe
           path: src-tauri/target/release/FocusPro.exe

@@ -1,7 +1,7 @@
 [package]
 name = "focus-pro"
 version = "0.1.0"
-description = "Lightweight Focus Blocker"
+description = "Strict Focus Blocker"
 authors = ["you"]
 edition = "2021"
 
@@ -9,7 +9,7 @@ edition = "2021"
 tauri-build = "1.5"
 
 [dependencies]
-tauri = { version = "1.5", features = ["shell-all"] }
+tauri = { version = "1.5", features = ["shell-all", "window-set-fullscreen", "window-set-always-on-top"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 

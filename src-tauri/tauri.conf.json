@@ -9,21 +9,12 @@
     "version": "0.1.0"
   },
   "tauri": {
-    "allowlist": {
-      "all": true
-    },
+    "allowlist": { "all": true },
     "bundle": {
       "active": true,
       "identifier": "com.focus.pro",
       "icon": []
     },
-    "windows": [
-      {
-        "title": "FocusPro",
-        "width": 400,
-        "height": 600,
-        "resizable": false
-      }
-    ]
+    "windows": [{ "title": "FocusPro", "width": 400, "height": 600, "resizable": false }]
   }
 }
