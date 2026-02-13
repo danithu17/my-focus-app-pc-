@@ -3,8 +3,15 @@
 <head>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --primary: #00ff88; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
-        body { font-family: 'Inter', sans-serif; margin: 0; background: var(--bg); color: var(--text); display: flex; height: 100vh; }
+        :root { --primary: #00ff88; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --accent: #3b82f6; }
+        body { 
+        width: 100vw; 
+        height: 100vh; 
+        display: flex; 
+        margin: 0; 
+        background: #0f172a; 
+    }
+   
         
         /* Sidebar */
         .sidebar { width: 70px; background: #020617; display: flex; flex-direction: column; align-items: center; padding: 20px 0; gap: 30px; border-right: 1px solid #334155; }
@@ -12,131 +19,175 @@
         .icon:hover, .active { opacity: 1; color: var(--primary); }
 
         /* Main Area */
-        .container { flex: 1; padding: 30px; display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: auto 1fr; gap: 20px; overflow-y: auto; }
-        
-        .header { grid-column: span 2; display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 20px; border-radius: 20px; }
-        
+         .container { 
+        flex: 1; 
+        padding: 30px; 
+        display: grid; 
+        grid-template-columns: 2fr 1fr; /* Meken thamai loku area ekak hadenne */
+        gap: 20px; 
+    }
+        .header { grid-column: span 2; display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid #334155; }
         .card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid #334155; }
 
         /* Timer UI */
-        .timer-box { text-align: center; }
-        .timer-display { font-size: 80px; font-weight: 900; font-family: 'Courier New', Courier, monospace; color: var(--primary); margin: 10px 0; }
-        .btn-main { background: var(--primary); color: #000; border: none; padding: 15px 40px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .timer-display { font-size: 80px; font-weight: 900; font-family: monospace; color: var(--primary); margin: 10px 0; text-shadow: 0 0 20px rgba(0,255,136,0.3); }
+        .btn-main { background: var(--primary); color: #000; border: none; padding: 15px 40px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-main:hover { transform: scale(1.05); box-shadow: 0 0 15px var(--primary); }
 
-        /* Task List */
-        .task-list { max-height: 300px; overflow-y: auto; }
-        .task-item { background: #334155; padding: 10px; border-radius: 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+        /* Tasks */
+        .task-item { background: #334155; padding: 12px; border-radius: 10px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+        .delete-btn { color: #ef4444; cursor: pointer; font-size: 12px; }
 
-        /* Graph Box */
-        .graph-box { grid-column: span 1; }
-
-        /* Lock Screen Overlay */
-        #lock-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: none; flex-direction: column; justify-content: center; align-items: center; }
+        /* Overlay */
+        #lock-screen { position: fixed; top:0; left:0; width:100%; height:100%; background: radial-gradient(circle, #0f172a, #000); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; }
+        input { background: #0f172a; border: 1px solid #334155; color: white; padding: 12px; border-radius: 8px; outline: none; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
         <div class="icon active">🏠</div>
-        <div class="icon">📈</div>
-        <div class="icon">🎯</div>
-        <div class="icon">⚙️</div>
+        <div class="icon" onclick="resetStats()">♻️</div>
     </div>
 
     <div class="container">
         <div class="header">
             <div>
-                <h2 style="margin:0">Welcome Back, Focus Master! ⚡</h2>
-                <p style="color:#94a3b8; margin:5px 0 0 0">You have 4 tasks remaining for today.</p>
+                <h2 style="margin:0">Focus Dashboard ⚡</h2>
+                <p style="color:#94a3b8; margin:5px 0 0 0">Level: <span id="level-txt">1</span> | Total XP: <span id="xp-txt">0</span></p>
             </div>
-            <div style="text-align: right">
-                <span style="background:var(--primary); color:#000; padding:5px 15px; border-radius:20px; font-weight:bold">Rank: Pro</span>
-            </div>
+            <button class="btn-main" style="padding: 10px 20px;" onclick="clearAllData()">Clear All Data</button>
         </div>
 
-        <div class="card timer-box">
+        <div class="card" style="text-align: center;">
             <h3>Focus Timer 🕒</h3>
             <div class="timer-display" id="main-timer">25:00</div>
-            <div style="margin-bottom: 20px;">
-                <input type="text" id="apps" placeholder="Apps: chrome.exe, discord.exe" style="width:70%; padding:10px; border-radius:8px; border:none;">
-            </div>
-            <button class="btn-main" onclick="startFocus()">IGNITE FOCUS</button>
+            <input type="text" id="apps" placeholder="Block: chrome.exe, discord.exe" style="width: 80%; margin-bottom: 15px;">
+            <br>
+            <button class="btn-main" onclick="startFocus()">START FOCUS</button>
         </div>
 
-        <div class="card graph-box">
-            <h3>Weekly Focus Activity 📊</h3>
-            <canvas id="focusChart" height="200"></canvas>
+        <div class="card">
+            <h3>Focus Activity (This Week) 📊</h3>
+            <canvas id="focusChart" height="180"></canvas>
         </div>
 
         <div class="card">
             <h3>To-Do List ✅</h3>
-            <div class="task-list" id="tasks">
-                <div class="task-item"><input type="checkbox"> Finish Math Assignment</div>
-                <div class="task-item"><input type="checkbox"> Code Tauri Backend</div>
-                <div class="task-item"><input type="checkbox"> Push to GitHub</div>
+            <div id="tasks-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;"></div>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="task-input" placeholder="New task..." style="flex:1">
+                <button onclick="addTask()" style="background:var(--accent); color:white; border:none; border-radius:8px; padding:0 15px; cursor:pointer">+</button>
             </div>
-            <input type="text" id="new-task" placeholder="+ Add a task" style="width:100%; background:transparent; border:1px solid #334155; color:white; padding:10px; margin-top:10px; border-radius:8px;">
-        </div>
-
-        <div class="card" style="display:flex; align-items:center; justify-content:center; text-align:center; font-style:italic; color:#94a3b8">
-            "Your focus determines your reality." - Qui-Gon Jinn
         </div>
     </div>
 
     <div id="lock-screen">
-        <h1 style="color:var(--primary); font-size: 50px;">STRICT MODE ON</h1>
-        <div id="lock-timer" style="font-size: 120px; font-weight:900; margin: 40px 0;">25:00</div>
-        <input type="password" id="pass" placeholder="Unlock Password" style="padding:15px; border-radius:10px; border:none; width:300px; text-align:center;">
-        <button onclick="stopFocus()" style="margin-top:20px; background:red; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">EMERGENCY STOP</button>
+        <h1 style="color:var(--primary)">STRICT MODE ACTIVE</h1>
+        <div id="lock-timer" style="font-size: 100px; font-weight: 800; margin: 20px;">25:00</div>
+        <input type="password" id="pass" placeholder="Password: 123" style="width: 250px; text-align: center;">
+        <button onclick="stopFocus()" style="margin-top:20px; background:#ef4444; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer">EMERGENCY UNLOCK</button>
     </div>
+
+    <audio id="start-snd" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
+    <audio id="success-snd" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
 
     <script>
         const { invoke } = window.__TAURI__.tauri;
         let timeLeft = 25 * 60;
-        let interval;
+        let timerId;
+        let myChart;
 
-        // --- Graph Logic ---
-        const ctx = document.getElementById('focusChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                datasets: [{
-                    label: 'Focus Hours',
-                    data: [2, 5, 3, 8, 4, 2, 6],
-                    borderColor: '#00ff88',
-                    backgroundColor: 'rgba(0, 255, 136, 0.1)',
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#334155' } }, x: { grid: { display: false } } } }
-        });
+        // --- Persistent Stats Logic ---
+        let stats = JSON.parse(localStorage.getItem('focusStats')) || { xp: 0, level: 1, history: [0,0,0,0,0,0,0] };
+        let tasks = JSON.parse(localStorage.getItem('focusTasks')) || [];
 
-        // --- Timer Logic ---
-        function updateUI() {
-            let m = Math.floor(timeLeft / 60);
-            let s = timeLeft % 60;
-            let timeStr = `${m}:${s < 10 ? '0' : ''}${s}`;
-            document.getElementById('main-timer').innerText = timeStr;
-            document.getElementById('lock-timer').innerText = timeStr;
+        function init() {
+            renderTasks();
+            updateStatDisplay();
+            renderChart();
         }
 
+        function updateStatDisplay() {
+            document.getElementById('xp-txt').innerText = stats.xp;
+            document.getElementById('level-txt').innerText = stats.level;
+        }
+
+        // --- Task Logic ---
+        function addTask() {
+            const val = document.getElementById('task-input').value;
+            if(!val) return;
+            tasks.push(val);
+            localStorage.setItem('focusTasks', JSON.stringify(tasks));
+            document.getElementById('task-input').value = "";
+            renderTasks();
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('tasks-container');
+            container.innerHTML = tasks.map((t, i) => `
+                <div class="task-item">
+                    <span>${t}</span>
+                    <span class="delete-btn" onclick="deleteTask(${i})">✖</span>
+                </div>
+            `).join('');
+        }
+
+        function deleteTask(i) {
+            tasks.splice(i, 1);
+            localStorage.setItem('focusTasks', JSON.stringify(tasks));
+            renderTasks();
+        }
+
+        // --- Graph Logic ---
+        function renderChart() {
+            const ctx = document.getElementById('focusChart').getContext('2d');
+            if(myChart) myChart.destroy();
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+                    datasets: [{ label: 'Mins Focused', data: stats.history, backgroundColor: '#00ff88' }]
+                },
+                options: { scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        // --- Focus Logic ---
         async function startFocus() {
             let apps = document.getElementById('apps').value.split(',').map(a => a.trim());
             if(!apps[0]) return alert("Add apps to block!");
 
+            document.getElementById('start-snd').play();
             document.getElementById('lock-screen').style.display = 'flex';
             await invoke('start_focus', { apps });
 
-            interval = setInterval(() => {
+            timerId = setInterval(() => {
                 timeLeft--;
-                updateUI();
+                let m = Math.floor(timeLeft / 60);
+                let s = timeLeft % 60;
+                let str = `${m}:${s < 10 ? '0' : ''}${s}`;
+                document.getElementById('main-timer').innerText = str;
+                document.getElementById('lock-timer').innerText = str;
+
                 if(timeLeft <= 0) {
-                    clearInterval(interval);
-                    location.reload();
+                    clearInterval(timerId);
+                    completeSession();
                 }
             }, 1000);
+        }
+
+        function completeSession() {
+            document.getElementById('success-snd').play();
+            stats.xp += 100;
+            if(stats.xp >= 500) { stats.xp = 0; stats.level++; }
+            
+            let day = new Date().getDay();
+            stats.history[day] += 25;
+            
+            localStorage.setItem('focusStats', JSON.stringify(stats));
+            alert("Session Complete! +100 XP earned.");
+            location.reload();
         }
 
         async function stopFocus() {
@@ -144,6 +195,15 @@
             let ok = await invoke('stop_focus', { input_pass: pass });
             if(ok) location.reload(); else alert("Wrong Password!");
         }
+
+        function clearAllData() {
+            if(confirm("Are you sure? All stats and tasks will be deleted.")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        init();
     </script>
 </body>
 </html>
