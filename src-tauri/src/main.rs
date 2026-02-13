@@ -14,7 +14,7 @@ fn start_focus(state: State<'_, AppState>, apps: Vec<String>, window: Window) {
     let mut is_blocking = state.is_blocking.lock().unwrap();
     *is_blocking = true;
 
-    // Window eka Fullscreen karala Always on Top dapan
+    // Window eka Fullscreen karanawa
     window.set_fullscreen(true).unwrap();
     window.set_always_on_top(true).unwrap();
 
@@ -22,9 +22,12 @@ fn start_focus(state: State<'_, AppState>, apps: Vec<String>, window: Window) {
     std::thread::spawn(move || {
         while *is_blocking_clone.lock().unwrap() {
             for app in &apps {
-                let _ = Command::new("taskkill").args(&["/F", "/IM", app]).spawn();
+                // Windows wala app eka kill කරන command එක
+                let _ = Command::new("taskkill")
+                    .args(&["/F", "/IM", app])
+                    .spawn();
             }
-            std::thread::sleep(std::time::Duration::from_secs(2));
+            std::thread::sleep(std::time::Duration::from_secs(2)); // Every 2 seconds check
         }
     });
 }
