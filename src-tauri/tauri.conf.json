@@ -10,11 +10,29 @@
   },
   "tauri": {
     "allowlist": {
-      "all": true
+      "all": true,
+      "shell": {
+        "all": false,
+        "execute": true,
+        "sidecar": false,
+        "open": true
+      },
+      "window": {
+        "all": true,
+        "setFullscreen": true,
+        "setAlwaysOnTop": true
+      }
     },
     "bundle": {
       "active": true,
-      "identifier": "com.focus.pro"
+      "targets": "all",
+      "identifier": "com.focus.pro",
+      "icon": [
+        "icons/icon.ico"
+      ]
+    },
+    "security": {
+      "csp": null
     },
     "windows": [
       {
@@ -22,7 +40,9 @@
         "width": 400,
         "height": 600,
         "resizable": false,
-        "fullscreen": false
+        "fullscreen": false,
+        "alwaysOnTop": false,
+        "center": true
       }
     ]
   }
