@@ -1,20 +1,29 @@
 {
   "build": {
-    "distDir": "../src",
-    "devPath": "../src",
-    "beforeBuildCommand": ""
+    "dist_dir": "../src",
+    "dev_path": "../src",
+    "before_build_command": ""
   },
   "package": {
-    "productName": "FocusPro",
+    "product_name": "FocusPro",
     "version": "0.1.0"
   },
   "tauri": {
-    "allowlist": { "all": true },
+    "allowlist": {
+      "all": true
+    },
     "bundle": {
       "active": true,
-      "identifier": "com.focus.pro",
-      "icon": []
+      "identifier": "com.focus.pro"
     },
-    "windows": [{ "title": "FocusPro", "width": 400, "height": 600, "resizable": false }]
+    "windows": [
+      {
+        "title": "FocusPro",
+        "width": 400,
+        "height": 600,
+        "resizable": false,
+        "fullscreen": false
+      }
+    ]
   }
 }
