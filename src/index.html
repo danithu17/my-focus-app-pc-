@@ -1,113 +1,148 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --primary: #2ecc71; --dark: #2c3e50; --danger: #e74c3c; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--dark); color: white; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        :root { --primary: #00ff88; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; margin: 0; background: var(--bg); color: var(--text); display: flex; height: 100vh; }
         
-        .card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 40px; border-radius: 30px; border: 2px solid rgba(255,255,255,0.1); width: 380px; text-align: center; transition: 0.5s; }
+        /* Sidebar */
+        .sidebar { width: 70px; background: #020617; display: flex; flex-direction: column; align-items: center; padding: 20px 0; gap: 30px; border-right: 1px solid #334155; }
+        .icon { font-size: 24px; cursor: pointer; opacity: 0.5; transition: 0.3s; }
+        .icon:hover, .active { opacity: 1; color: var(--primary); }
+
+        /* Main Area */
+        .container { flex: 1; padding: 30px; display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: auto 1fr; gap: 20px; overflow-y: auto; }
         
-        /* Level & XP Style */
-        .stats { display: flex; justify-content: space-around; margin-bottom: 20px; font-weight: bold; font-size: 14px; }
-        .xp-bar { width: 100%; height: 10px; background: #444; border-radius: 5px; margin: 10px 0; overflow: hidden; }
-        .xp-fill { width: 30%; height: 100%; background: var(--primary); transition: 0.5s; }
-
-        /* Animation for Tree/Plant */
-        .plant-container { font-size: 80px; margin: 20px 0; animation: sway 3s infinite ease-in-out; }
-        @keyframes sway { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
-
-        .timer-display { font-size: 60px; font-weight: bold; font-family: monospace; text-shadow: 0 0 20px var(--primary); }
+        .header { grid-column: span 2; display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 20px; border-radius: 20px; }
         
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 12px; border: none; background: rgba(255,255,255,0.2); color: white; outline: none; text-align: center; }
-        ::placeholder { color: #ddd; }
+        .card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid #334155; }
 
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 15px; transition: 0.3s; }
-        .btn-start { background: var(--primary); color: white; box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4); }
-        .btn-start:hover { transform: scale(1.05); }
+        /* Timer UI */
+        .timer-box { text-align: center; }
+        .timer-display { font-size: 80px; font-weight: 900; font-family: 'Courier New', Courier, monospace; color: var(--primary); margin: 10px 0; }
+        .btn-main { background: var(--primary); color: #000; border: none; padding: 15px 40px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 16px; }
 
-        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: radial-gradient(circle, #27ae60, #145a32); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .hidden { display: none; }
+        /* Task List */
+        .task-list { max-height: 300px; overflow-y: auto; }
+        .task-item { background: #334155; padding: 10px; border-radius: 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+
+        /* Graph Box */
+        .graph-box { grid-column: span 1; }
+
+        /* Lock Screen Overlay */
+        #lock-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: none; flex-direction: column; justify-content: center; align-items: center; }
     </style>
 </head>
 <body>
 
-    <div class="card" id="setup-view">
-        <div class="stats">
-            <span>LEVEL <span id="lvl">1</span></span>
-            <span>XP: <span id="xp">120</span>/500</span>
-        </div>
-        <div class="xp-bar"><div class="xp-fill" id="xp-fill"></div></div>
-        
-        <h2>Focus Island 🏝️</h2>
-        <div class="plant-container">🌱</div>
-        
-        <input type="number" id="time-input" value="25" placeholder="Minutes">
-        <input type="text" id="app-input" placeholder="Block: chrome.exe, spotify.exe">
-        
-        <button class="btn btn-start" onclick="startFocus()">PLANT TREE</button>
+    <div class="sidebar">
+        <div class="icon active">🏠</div>
+        <div class="icon">📈</div>
+        <div class="icon">🎯</div>
+        <div class="icon">⚙️</div>
     </div>
 
-    <div class="overlay hidden" id="focus-view">
-        <div class="plant-container" id="focus-plant">🌳</div>
-        <div class="timer-display" id="timer">25:00</div>
-        <p>Stay focused! Don't let your tree die.</p>
-        
-        <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 20px; margin-top: 20px;">
-            <input type="password" id="pass-input" placeholder="Emergency Password">
-            <button class="btn" style="background: #333;" onclick="unlock()">GIVE UP (Penalty -50 XP)</button>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h2 style="margin:0">Welcome Back, Focus Master! ⚡</h2>
+                <p style="color:#94a3b8; margin:5px 0 0 0">You have 4 tasks remaining for today.</p>
+            </div>
+            <div style="text-align: right">
+                <span style="background:var(--primary); color:#000; padding:5px 15px; border-radius:20px; font-weight:bold">Rank: Pro</span>
+            </div>
         </div>
+
+        <div class="card timer-box">
+            <h3>Focus Timer 🕒</h3>
+            <div class="timer-display" id="main-timer">25:00</div>
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="apps" placeholder="Apps: chrome.exe, discord.exe" style="width:70%; padding:10px; border-radius:8px; border:none;">
+            </div>
+            <button class="btn-main" onclick="startFocus()">IGNITE FOCUS</button>
+        </div>
+
+        <div class="card graph-box">
+            <h3>Weekly Focus Activity 📊</h3>
+            <canvas id="focusChart" height="200"></canvas>
+        </div>
+
+        <div class="card">
+            <h3>To-Do List ✅</h3>
+            <div class="task-list" id="tasks">
+                <div class="task-item"><input type="checkbox"> Finish Math Assignment</div>
+                <div class="task-item"><input type="checkbox"> Code Tauri Backend</div>
+                <div class="task-item"><input type="checkbox"> Push to GitHub</div>
+            </div>
+            <input type="text" id="new-task" placeholder="+ Add a task" style="width:100%; background:transparent; border:1px solid #334155; color:white; padding:10px; margin-top:10px; border-radius:8px;">
+        </div>
+
+        <div class="card" style="display:flex; align-items:center; justify-content:center; text-align:center; font-style:italic; color:#94a3b8">
+            "Your focus determines your reality." - Qui-Gon Jinn
+        </div>
+    </div>
+
+    <div id="lock-screen">
+        <h1 style="color:var(--primary); font-size: 50px;">STRICT MODE ON</h1>
+        <div id="lock-timer" style="font-size: 120px; font-weight:900; margin: 40px 0;">25:00</div>
+        <input type="password" id="pass" placeholder="Unlock Password" style="padding:15px; border-radius:10px; border:none; width:300px; text-align:center;">
+        <button onclick="stopFocus()" style="margin-top:20px; background:red; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">EMERGENCY STOP</button>
     </div>
 
     <script>
         const { invoke } = window.__TAURI__.tauri;
-        let timeLeft;
-        let timer;
-        let xp = 120;
-        let level = 1;
+        let timeLeft = 25 * 60;
+        let interval;
 
-        function updateXP(amount) {
-            xp += amount;
-            if(xp >= 500) { xp = 0; level++; alert("LEVEL UP! 🎊"); }
-            document.getElementById('xp').innerText = xp;
-            document.getElementById('lvl').innerText = level;
-            document.getElementById('xp-fill').style.width = (xp / 500 * 100) + "%";
+        // --- Graph Logic ---
+        const ctx = document.getElementById('focusChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Focus Hours',
+                    data: [2, 5, 3, 8, 4, 2, 6],
+                    borderColor: '#00ff88',
+                    backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#334155' } }, x: { grid: { display: false } } } }
+        });
+
+        // --- Timer Logic ---
+        function updateUI() {
+            let m = Math.floor(timeLeft / 60);
+            let s = timeLeft % 60;
+            let timeStr = `${m}:${s < 10 ? '0' : ''}${s}`;
+            document.getElementById('main-timer').innerText = timeStr;
+            document.getElementById('lock-timer').innerText = timeStr;
         }
 
         async function startFocus() {
-            const apps = document.getElementById('app-input').value.split(',').map(s => s.trim());
-            timeLeft = document.getElementById('time-input').value * 60;
-            
-            if(apps[0] === "") { alert("Add an app!"); return; }
+            let apps = document.getElementById('apps').value.split(',').map(a => a.trim());
+            if(!apps[0]) return alert("Add apps to block!");
 
+            document.getElementById('lock-screen').style.display = 'flex';
             await invoke('start_focus', { apps });
-            document.getElementById('setup-view').classList.add('hidden');
-            document.getElementById('focus-view').classList.remove('hidden');
 
-            timer = setInterval(() => {
+            interval = setInterval(() => {
                 timeLeft--;
-                let m = Math.floor(timeLeft / 60);
-                let s = timeLeft % 60;
-                document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-                
-                // Real-time XP gain
-                if(timeLeft % 60 === 0) updateXP(10); 
-
+                updateUI();
                 if(timeLeft <= 0) {
-                    clearInterval(timer);
-                    updateXP(100);
-                    alert("Tree fully grown! You earned 100 XP.");
+                    clearInterval(interval);
                     location.reload();
                 }
             }, 1000);
         }
 
-        async function unlock() {
-            const pass = document.getElementById('pass-input').value;
-            const success = await invoke('stop_focus', { input_pass: pass });
-            if(success) {
-                updateXP(-50);
-                location.reload();
-            } else { alert("Wrong password!"); }
+        async function stopFocus() {
+            let pass = document.getElementById('pass').value;
+            let ok = await invoke('stop_focus', { input_pass: pass });
+            if(ok) location.reload(); else alert("Wrong Password!");
         }
     </script>
 </body>
